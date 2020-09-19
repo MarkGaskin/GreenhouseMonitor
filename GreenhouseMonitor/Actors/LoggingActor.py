@@ -1,42 +1,52 @@
 from thespian.actors import Actor
+from Messages.Message import parseMessage
+from Messages.SysLogMessage import parseSysLogMessage
+from Messages.DataLogMessage import parseDataLogMessage
 import os
-import string
 import csv
 import datetime
-import json
 
 
-scriptDir = os.path.dirname(__file__) # absolute dir the script is in
+scriptDir = os.path.dirname(__file__)  # absolute dir the script is in
 relDataLogPath = "../../dataLog.csv"
 absDataLogFilePath = os.path.join(scriptDir, relDataLogPath)
 relSysLogPath = "../../sysLog.csv"
 absSysLogFilePath = os.path.join(scriptDir, relSysLogPath)
 
 sysLogFieldNames = ['dateString', 'timeString', 'Level', 'Log']
-dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'Light']
+dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'LightOn', 'FanOn']
 
 
 class LoggingActor(Actor):
     def __init__(self, *args, **kwargs):
         self.absDataLogFilePath = absDataLogFilePath
         self.absSysLogFilePath = absSysLogFilePath
+        print("LoggingActor is alive")
         super().__init__(*args, **kwargs)
 
     def receiveMessage(self, message, sender):
-        if message.startswith("Sys"):
-            with open(self.absSysLogFilePath, 'w', newline='') as csvfile:
-                spamWriter = csv.DictWriter(csvfile, fieldnames=sysLogFieldNames)
+        msg = parseMessage(message)
+        if msg.name == "SysLog":
+            msg = parseSysLogMessage(message)
+            with open(self.absSysLogFilePath, 'a+', newline='') as csvFile:
+                csvWriter = csv.DictWriter(csvFile, fieldnames=sysLogFieldNames)
                 time = datetime.datetime.now()
                 dateString = time.strftime("%Y-%m-%d")
                 timeString = time.strftime("%X")
-                spamWriter.writerow({'dateString': dateString, 'timeString': timeString, 'Level': 'Warning', 'Log': "Test"})
-        elif message.startswith("Data"):
-            with open(self.absDataLogFilePath, 'w', newline='') as csvfile:
-                print(message[4:])
-                spamWriter = csv.DictWriter(csvfile, fieldnames=dataLogFieldNames)
+                csvWriter.writerow({'dateString': dateString,
+                                    'timeString': timeString,
+                                    'Level': msg.level,
+                                    'Log': msg.log})
+        elif msg.name == "DataLog":
+            msg = parseDataLogMessage(message)
+            with open(self.absDataLogFilePath, 'a+', newline='') as csvFile:
+                csvWriter = csv.DictWriter(csvFile, fieldnames=dataLogFieldNames)
                 time = datetime.datetime.now()
                 dateString = time.strftime("%Y-%m-%d")
                 timeString = time.strftime("%X")
-                spamWriter.writerow({'dateString': dateString, 'timeString': timeString, 'Temperature': "0.0", 'Humidity': "0.0", 'Light': "0.0"})
-        
-
+                csvWriter.writerow({'dateString': dateString,
+                                    'timeString': timeString,
+                                    'Temperature': msg.temp,
+                                    'Humidity': msg.humidity,
+                                    'LightOn': msg.lightOn,
+                                    'FanOn': msg.fanOn})
