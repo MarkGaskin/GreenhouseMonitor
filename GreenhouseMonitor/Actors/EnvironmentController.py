@@ -1,9 +1,10 @@
 from Messages.Message import parseMessage
-from Messages.ActorAddresses import parseActorAddressMessage
+from Messages.ActorAddressesMessage import parseActorAddressMessage
 from .LoggingActor import *
 from Actors.EnvironmentActors.FanController import FanController
 from Actors.EnvironmentActors.ClimateReader import ClimateReader, ClimateData
 from Actors.EnvironmentActors.LightController import LightController
+from Messages.EnvironmentDataMessage import EnvironmentDataMessage
 
 
 class EnvironmentData:
@@ -18,7 +19,7 @@ class EnvironmentController(Actor):
         self.FanCtrlAddr = ""
         self.LightCtrlAddr = ""
         self.ClimRdrAddr = ""
-        self.LogActAddr = ""
+        self.logActAddr = ""
         self.webGUIAddr = ""
         self.schedActAddr = ""
         self.envData = EnvironmentData(ClimateData(21, 52), True, False)
@@ -33,10 +34,12 @@ class EnvironmentController(Actor):
             self.LightCtrlAddr = self.createActor(LightController)
         elif msg.name == "ActorAddress":
             msg = parseActorAddressMessage(message)
-            self.LogActAddr = msg.logActAddr
+            self.logActAddr = msg.logActAddr
             self.webGUIAddr = msg.webGUIAddr
             self.schedActAddr = msg.schedActAddr
-        elif msg.name == "GetEnvironmentData":
-            return self.send(self.webGUIAddr, "SendClimateData")
+        elif msg.name == "SendEnvironmentData":
+            msg = EnvironmentDataMessage(self.envData)
+            self.send(self.webGUIAddr, msg.encode())
+            self.send(self.logActAddr, msg.encode())
         else:
             return

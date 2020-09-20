@@ -2,7 +2,7 @@ from thespian.actors import Actor
 from Messages.Message import parseMessage
 from Messages.SysLogMessage import parseSysLogMessage
 from Messages.DataLogMessage import parseDataLogMessage
-from Messages.ActorAddresses import parseActorAddressMessage
+from Messages.ActorAddressesMessage import parseActorAddressMessage
 import os
 import csv
 import datetime
@@ -59,3 +59,5 @@ class LoggingActor(Actor):
                                     'Humidity': msg.humidity,
                                     'LightOn': msg.lightOn,
                                     'FanOn': msg.fanOn})
+        else:
+            return

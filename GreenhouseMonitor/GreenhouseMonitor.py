@@ -7,7 +7,8 @@ from flask import Flask, render_template
 from Messages.Message import Message
 from Messages.SysLogMessage import SysLogMessage
 from Messages.DataLogMessage import DataLogMessage
-from Messages.ActorAddresses import ActorAddressMessage
+from Messages.ActorAddressesMessage import ActorAddressMessage
+from Messages.WebGUIDataMessage import parseWebGUIDataMessage
 import socket
 import templates
 
@@ -23,8 +24,17 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     statusMsg = Message("getData")
-    webGUIData = ActorSystem().ask(aSys.createActor(WebGUI, globalName='WebGUISingleton'), statusMsg.encode(), 60)
-    return render_template("homepage.html", webGUIData)
+    webGUIData = parseWebGUIDataMessage(ActorSystem().ask(aSys.createActor(WebGUI, globalName='WebGUISingleton'),
+                                                          statusMsg.encode(),
+                                                          60))
+    templateData = {
+        'time': webGUIData.webGUIData.time,
+        'envData': webGUIData.webGUIData.envData,
+        'inputStartTime': "06:30",
+        'inputEndTime': "19:30"
+    }
+
+    return render_template("homepage.html", **templateData)
 
 
 if __name__ == "__main__":
@@ -61,6 +71,9 @@ if __name__ == "__main__":
 
     msg = Message("ScheduleTask")
     # ActorSystem().tell(schedActor, msg.encode())
+
+    launchMsg = Message("SendEnvironmentData")
+    ActorSystem().tell(envCtrl, launchMsg.encode())
 
     app.run()
 

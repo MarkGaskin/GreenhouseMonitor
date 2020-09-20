@@ -1,5 +1,5 @@
 from thespian.actors import Actor
-from Messages.ActorAddresses import parseActorAddressMessage
+from Messages.ActorAddressesMessage import parseActorAddressMessage
 from Messages.Message import parseMessage
 from crontab import CronTab
 import os
