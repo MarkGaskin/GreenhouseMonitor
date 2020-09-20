@@ -13,6 +13,7 @@ class SchedulingActor(Actor):
         self.logActAddr = ""
         self.envCtrlAddr = ""
         self.webGUIAddr = ""
+        self.username = "SchedulingActor"
         print("SchedulingActor is alive")
         super().__init__(*args, **kwargs)
 
@@ -27,10 +28,16 @@ class SchedulingActor(Actor):
             print("Scheduling")
             scriptDir = os.path.dirname(__file__)  # absolute dir the script is in
             addr = {'addr': self.logActAddr}
-            command = "python3 " + scriptDir + "\\SendSysLog.py " + str(pickle.dumps(addr))
+            command = "python3 " + scriptDir + "/SendSysLog.py " + str(addr)
             print(command)
-            cron = CronTab(tab=("""* * * * * """ + command))
-            cron.write()
+            # cron = CronTab(tab=("""* * * * * """ + command))
+            cron = CronTab(user=True)
+            job = cron.new(command=command, comment="SendSysLog")
+            job.minute.every(1)
+            
+            # cron.write()
+        elif msg.name == "TimingTask1":
+            print("TimingTask1 has been called")
         else:
             self.send(sender, "Blank")
 

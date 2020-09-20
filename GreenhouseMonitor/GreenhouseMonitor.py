@@ -52,7 +52,7 @@ if __name__ == "__main__":
     webGUI = aSys.createActor(WebGUI, globalName='WebGUISingleton')
     loggingActor = aSys.createActor(LoggingActor)
     envCtrl = aSys.createActor(EnvironmentController)
-    schedActor = aSys.createActor(SchedulingActor)
+    schedActor = aSys.createActor(SchedulingActor, globalName='SchedulingActorSingleton')
 
     launchMsg = Message("Launch")
     ActorSystem().tell(envCtrl, launchMsg.encode())
@@ -70,10 +70,10 @@ if __name__ == "__main__":
     ActorSystem().tell(schedActor, actorAddrMsg.encode())
 
     msg = Message("ScheduleTask")
-    # ActorSystem().tell(schedActor, msg.encode())
+    ActorSystem().tell(schedActor, msg.encode())
 
     launchMsg = Message("SendEnvironmentData")
-    ActorSystem().tell(envCtrl, launchMsg.encode())
+    # ActorSystem().tell(envCtrl, launchMsg.encode())
 
     app.run()
 

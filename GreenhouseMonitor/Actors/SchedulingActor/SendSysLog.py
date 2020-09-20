@@ -1,11 +1,12 @@
 #!/bin/python3
 
-from Messages.SysLogMessage import SysLogMessage
+from Messages.Message import Message
+from Actors.SchedulingActor.SchedulingActor import SchedulingActor
 from thespian.actors import *
 import sys
 import pickle
 
-print("SendSysLog script")
-msg = SysLogMessage("INFO", "CRON is alive!!!")
-addr = pickle.loads(sys.arg1)
-ActorSystem().tell(addr, msg.encode())
+msg = Message("TimingTask1")
+
+ActorSystem().tell(aSys.createActor(SchedulingActor, globalName='SchedulingActorSingleton'), msg.encode())
+
