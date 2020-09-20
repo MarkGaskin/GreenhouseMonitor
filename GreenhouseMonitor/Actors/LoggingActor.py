@@ -2,6 +2,7 @@ from thespian.actors import Actor
 from Messages.Message import parseMessage
 from Messages.SysLogMessage import parseSysLogMessage
 from Messages.DataLogMessage import parseDataLogMessage
+from Messages.ActorAddresses import parseActorAddressMessage
 import os
 import csv
 import datetime
@@ -21,12 +22,20 @@ class LoggingActor(Actor):
     def __init__(self, *args, **kwargs):
         self.absDataLogFilePath = absDataLogFilePath
         self.absSysLogFilePath = absSysLogFilePath
+        self.webGUIAddr = ""
+        self.envCtrlAddr = ""
+        self.schedActAddr = ""
         print("LoggingActor is alive")
         super().__init__(*args, **kwargs)
 
     def receiveMessage(self, message, sender):
         msg = parseMessage(message)
-        if msg.name == "SysLog":
+        if msg.name == "ActorAddress":
+            msg = parseActorAddressMessage(message)
+            self.webGUIAddr = msg.webGUIAddr
+            self.envCtrlAddr = msg.envCtrlAddr
+            self.schedActAddr = msg.schedActAddr
+        elif msg.name == "SysLog":
             msg = parseSysLogMessage(message)
             with open(self.absSysLogFilePath, 'a+', newline='') as csvFile:
                 csvWriter = csv.DictWriter(csvFile, fieldnames=sysLogFieldNames)

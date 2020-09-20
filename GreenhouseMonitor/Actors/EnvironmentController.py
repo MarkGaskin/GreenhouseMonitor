@@ -1,8 +1,16 @@
+from Messages.Message import parseMessage
 from Messages.ActorAddresses import parseActorAddressMessage
 from .LoggingActor import *
 from Actors.EnvironmentActors.FanController import FanController
-from Actors.EnvironmentActors.ClimateReader import ClimateReader
+from Actors.EnvironmentActors.ClimateReader import ClimateReader, ClimateData
 from Actors.EnvironmentActors.LightController import LightController
+
+
+class EnvironmentData:
+    def __init__(self, climateData, lightOn, fanOn):
+        self.climateData = climateData
+        self.lightOn = lightOn
+        self.fanOn = fanOn
 
 
 class EnvironmentController(Actor):
@@ -12,6 +20,8 @@ class EnvironmentController(Actor):
         self.ClimRdrAddr = ""
         self.LogActAddr = ""
         self.webGUIAddr = ""
+        self.schedActAddr = ""
+        self.envData = EnvironmentData(ClimateData(21, 52), True, False)
         print("EnvironmentController is alive")
         super().__init__(*args, **kwargs)
 
@@ -23,8 +33,10 @@ class EnvironmentController(Actor):
             self.LightCtrlAddr = self.createActor(LightController)
         elif msg.name == "ActorAddress":
             msg = parseActorAddressMessage(message)
-            self.LogActAddr = msg.LogActAddr
+            self.LogActAddr = msg.logActAddr
             self.webGUIAddr = msg.webGUIAddr
-            print("AA hit")
+            self.schedActAddr = msg.schedActAddr
+        elif msg.name == "GetEnvironmentData":
+            return self.send(self.webGUIAddr, "SendClimateData")
         else:
             return
