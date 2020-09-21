@@ -69,11 +69,11 @@ if __name__ == "__main__":
     ActorSystem().tell(loggingActor, actorAddrMsg.encode())
     ActorSystem().tell(schedActor, actorAddrMsg.encode())
 
-    msg = Message("ScheduleTask")
-    ActorSystem().tell(schedActor, msg.encode())
 
-    launchMsg = Message("SendEnvironmentData")
-    # ActorSystem().tell(envCtrl, launchMsg.encode())
+    # ActorSystem().tell(schedActor, msg.encode())
+
+    msg = Message("StartEnvironmentTasks")
+    ActorSystem().tell(envCtrl, msg.encode())
 
     app.run()
 

@@ -1,8 +1,10 @@
 from thespian.actors import Actor
+from Messages.Message import parseMessage
+from Messages.ClimateDataMessage import ClimateDataMessage
 
 
 class ClimateData:
-    def __init__(self, temperature, humidity):
+    def __init__(self, temperature=0, humidity=0):
         self.temperature = temperature
         self.humidity = humidity
 
@@ -21,4 +23,9 @@ class ClimateReader(Actor):
         super().__init__(*args, **kwargs)
 
     def receiveMessage(self, message, sender):
-        return
+        msg = parseMessage(message)
+        if msg.name == "UpdateClimateStatus":
+            climateData = ClimateData(getTemperature(), getHumidity())
+            self.send(sender, ClimateDataMessage(climateData).encode())
+        else:
+            return

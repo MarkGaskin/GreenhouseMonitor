@@ -1,7 +1,8 @@
 from thespian.actors import Actor
+from Actors.BaseActor import BaseActor
 from Messages.Message import parseMessage
 from Messages.SysLogMessage import parseSysLogMessage
-from Messages.DataLogMessage import parseDataLogMessage
+from Messages.EnvironmentDataMessage import parseEnvironmentDataMessage
 from Messages.ActorAddressesMessage import parseActorAddressMessage
 import os
 import csv
@@ -18,7 +19,7 @@ sysLogFieldNames = ['dateString', 'timeString', 'Level', 'Log']
 dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'LightOn', 'FanOn']
 
 
-class LoggingActor(Actor):
+class LoggingActor(BaseActor):
     def __init__(self, *args, **kwargs):
         self.absDataLogFilePath = absDataLogFilePath
         self.absSysLogFilePath = absSysLogFilePath
@@ -46,8 +47,8 @@ class LoggingActor(Actor):
                                     'timeString': timeString,
                                     'Level': msg.level,
                                     'Log': msg.log})
-        elif msg.name == "DataLog":
-            msg = parseDataLogMessage(message)
+        elif msg.name == "EnvironmentData":
+            msg = parseEnvironmentDataMessage(message)
             with open(self.absDataLogFilePath, 'a+', newline='') as csvFile:
                 csvWriter = csv.DictWriter(csvFile, fieldnames=dataLogFieldNames)
                 time = datetime.datetime.now()
@@ -55,9 +56,9 @@ class LoggingActor(Actor):
                 timeString = time.strftime("%X")
                 csvWriter.writerow({'dateString': dateString,
                                     'timeString': timeString,
-                                    'Temperature': msg.temp,
-                                    'Humidity': msg.humidity,
-                                    'LightOn': msg.lightOn,
-                                    'FanOn': msg.fanOn})
+                                    'Temperature': msg.environmentData.climateData.temperature,
+                                    'Humidity': msg.environmentData.climateData.humidity,
+                                    'LightOn': msg.environmentData.lightOn,
+                                    'FanOn': msg.environmentData.fanOn})
         else:
             return

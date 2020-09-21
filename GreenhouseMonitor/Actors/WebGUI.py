@@ -1,4 +1,5 @@
 from thespian.actors import Actor
+from Actors.BaseActor import BaseActor
 from Messages.ActorAddressesMessage import parseActorAddressMessage
 from Messages.Message import parseMessage
 from Actors.EnvironmentController import EnvironmentData
@@ -14,7 +15,7 @@ class WebGUIData:
         self.time = datetime.datetime.now()
 
 
-class WebGUI(Actor):
+class WebGUI(BaseActor):
     def __init__(self, *args, **kwargs):
         print("WebGUI is alive")
         self.count = 0
@@ -31,6 +32,7 @@ class WebGUI(Actor):
             webGUIDataMessage = WebGUIDataMessage(self.webGUIData)
             self.send(sender, webGUIDataMessage.encode())
         elif msg.name == "ActorAddress":
+            print("AA updated for scheduling Actors")
             msg = parseActorAddressMessage(message)
             self.logActAddr = msg.logActAddr
             self.envCtrlAddr = msg.envCtrlAddr
@@ -38,6 +40,7 @@ class WebGUI(Actor):
         elif msg.name == "EnvironmentData":
             msg = parseEnvironmentDataMessage(message)
             self.webGUIData.envData = msg.environmentData
+            self.webGUIData.time = datetime.datetime.now()
         else:
             self.send(sender, "Blank")
 

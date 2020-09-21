@@ -8,5 +8,5 @@ import pickle
 
 msg = Message("TimingTask1")
 
-ActorSystem().tell(aSys.createActor(SchedulingActor, globalName='SchedulingActorSingleton'), msg.encode())
+ActorSystem().tell(ActorSystem().createActor(SchedulingActor, globalName='SchedulingActorSingleton'), msg.encode())
 
