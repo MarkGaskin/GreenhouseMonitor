@@ -3,14 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <title>Hydroponics</title>
+    <link rel="stylesheet" href="static/styles.css">
 </head>
 <body>
-    <header>Header</header>
     <h1>Last Updated: {{ time }}</h1>
-    <h1>Temperature: {{ envData.climateData.humidity }}</h1>
-    <label for="StartTime">Start Time:</label>
-    <input type="time" id="StartTime" value={{inputStartTime}}>
-    <label for="EndTime">End Time:</label>
-    <input type="time" id="EndTime" value={{inputEndTime}}>
+    <h1>Temperature: {{ envData.climateData.temperature }}</h1>
+    <h1>Humidity: {{ envData.climateData.humidity }}</h1>
+    <form action="/UpdateFanLevel" method="POST">
+        <div class="slideContainer">
+            <input type="range" min="0" max="5" value="{{envData.fanLevel}}" class="slider" id="fanLevel" name="FanLevel">
+            <input type="submit" value="Update"/>
+        </div>
+    </form>
+    <h2>Light Status: {{lightStatus}}</h2>
+    <form action="/ToggleLightStatus" method="POST">
+        <button type="submit">Toggle</button>
+    </form>
+    <h1>Light Schedule:</h1>
+    <form action="/UpdateSchedule" method="POST">
+        <table >
+            <tr>
+                <th></th>
+                <th><h2>Today</h2></th>
+                <th><h2>Tomorrow</h2></th>
+            </tr>
+            <tr>
+                <td><h2>Start Time:</h2></td>
+                <td>
+                    <input type="time" name="CurrentStartTime" id="CurrentStartTime" value={{currentOn}}>
+                </td>
+                <td>
+                    <input type="time" name="UpcomingStartTime" id="UpcomingStartTime" value={{upcomingOn}}>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <h2>End Time:</h2>
+                </td>
+                <td>
+                    <input type="time" name="CurrentEndTime" id="CurrentEndTime" value={{currentOff}}>
+                </td>
+                <td>
+                    <input type="time" name="UpcomingEndTime" id="UpcomingEndTime" value={{upcomingOff}}>
+                </td>
+            </tr>
+            <tr>
+                <td/>
+                <td/>
+                <td>
+                    <input type="submit" value="Update"/>
+                </td>
+            </tr>
+        </table>
+    </form>
 </body>
 </html>

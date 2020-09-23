@@ -7,6 +7,7 @@ from Messages.ActorAddressesMessage import parseActorAddressMessage
 import os
 import csv
 import datetime
+import logging
 
 
 scriptDir = os.path.dirname(__file__)  # absolute dir the script is in
@@ -16,16 +17,22 @@ relSysLogPath = "../../sysLog.csv"
 absSysLogFilePath = os.path.join(scriptDir, relSysLogPath)
 
 sysLogFieldNames = ['dateString', 'timeString', 'Level', 'Log']
-dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'LightOn', 'FanOn']
+dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'LightOn', 'FanLevel']
 
 
 class LoggingActor(BaseActor):
     def __init__(self, *args, **kwargs):
         self.absDataLogFilePath = absDataLogFilePath
-        self.absSysLogFilePath = absSysLogFilePath
         self.webGUIAddr = ""
         self.envCtrlAddr = ""
-        self.schedActAddr = ""
+
+        filename = "SystemLog_" + datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H_%M") + ".log"
+        filepath = os.path.join("Logging", filename)
+        if not os.path.isdir("Logging"):
+            os.makedirs("Logging")
+        logging.basicConfig(filename=filepath, filemode='w',
+                            format='%(name)s - %(asctime)s - %(levelname)s - %(message)s')
+
         print("LoggingActor is alive")
         super().__init__(*args, **kwargs)
 
@@ -35,18 +42,14 @@ class LoggingActor(BaseActor):
             msg = parseActorAddressMessage(message)
             self.webGUIAddr = msg.webGUIAddr
             self.envCtrlAddr = msg.envCtrlAddr
-            self.schedActAddr = msg.schedActAddr
         elif msg.name == "SysLog":
             msg = parseSysLogMessage(message)
-            with open(self.absSysLogFilePath, 'a+', newline='') as csvFile:
-                csvWriter = csv.DictWriter(csvFile, fieldnames=sysLogFieldNames)
-                time = datetime.datetime.now()
-                dateString = time.strftime("%Y-%m-%d")
-                timeString = time.strftime("%X")
-                csvWriter.writerow({'dateString': dateString,
-                                    'timeString': timeString,
-                                    'Level': msg.level,
-                                    'Log': msg.log})
+            if msg.level == "Info":
+                logging.info(msg.log)
+            elif msg.level == "Error":
+                logging.error(msg.log)
+            else:
+                logging.debug(msg.log)
         elif msg.name == "EnvironmentData":
             msg = parseEnvironmentDataMessage(message)
             with open(self.absDataLogFilePath, 'a+', newline='') as csvFile:
@@ -59,6 +62,6 @@ class LoggingActor(BaseActor):
                                     'Temperature': msg.environmentData.climateData.temperature,
                                     'Humidity': msg.environmentData.climateData.humidity,
                                     'LightOn': msg.environmentData.lightOn,
-                                    'FanOn': msg.environmentData.fanOn})
+                                    'FanLevel': msg.environmentData.fanLevel})
         else:
             return
