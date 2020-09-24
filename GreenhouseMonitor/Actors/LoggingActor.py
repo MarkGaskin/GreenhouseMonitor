@@ -17,25 +17,25 @@ relDataLogPath = "../../dataLog.csv"
 absDataLogFilePath = os.path.join(scriptDir, relDataLogPath)
 dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'LightOn', 'FanLevel']
 
-FORMATTER = logging.Formatter("%(asctime)s — %(levelname)s — %(message)s")
-LOG_FILE = "SystemLog_" + datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H_%M") + ".log"
+formatter = logging.Formatter("%(asctime)s — %(levelname)s — %(message)s")
+logFile = "SystemLog_" + datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H_%M") + ".log"
 try:
     os.mkdir("Logging")
 except FileExistsError:
     pass
-filePath = os.path.join("Logging", LOG_FILE)
+filePath = os.path.join("Logging", logFile)
 
 
-def get_console_handler():
-    console_handler = logging.StreamHandler(sys.stdout)
-    console_handler.setFormatter(FORMATTER)
-    return console_handler
+def getConsoleHandler():
+    consoleHandler = logging.StreamHandler(sys.stdout)
+    consoleHandler.setFormatter(formatter)
+    return consoleHandler
 
 
-def get_file_handler():
-    file_handler = TimedRotatingFileHandler(filePath, when='midnight')
-    file_handler.setFormatter(FORMATTER)
-    return file_handler
+def getFileHandler():
+    fileHandler = TimedRotatingFileHandler(filePath, when='midnight')
+    fileHandler.setFormatter(formatter)
+    return fileHandler
 
 
 class LoggingActor(BaseActor):
@@ -44,12 +44,12 @@ class LoggingActor(BaseActor):
         self.webGUIAddr = ""
         self.envCtrlAddr = ""
 
-        file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
-        file_handler.setFormatter(FORMATTER)
+        file_handler = TimedRotatingFileHandler(logFile, when='midnight')
+        file_handler.setFormatter(formatter)
 
         self.logger = logging.getLogger("LoggingActor")
-        self.logger.addHandler(get_file_handler())
-        self.logger.addHandler(get_console_handler())
+        self.logger.addHandler(getFileHandler())
+        self.logger.addHandler(getConsoleHandler())
         self.logger.propagate = False
         self.logger.info("System launched")
         super().__init__(*args, **kwargs)
