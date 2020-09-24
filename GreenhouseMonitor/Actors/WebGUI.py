@@ -26,7 +26,7 @@ class WebGUI(BaseActor):
     def __init__(self, *args, **kwargs):
         print("WebGUI is alive")
         self.count = 0
-        self.logActAddr = ""
+        self.loggingAddr = ""
         self.envCtrlAddr = ""
         self.webGUIData = WebGUIData()
         super().__init__(*args, **kwargs)
@@ -38,7 +38,7 @@ class WebGUI(BaseActor):
             self.send(sender, webGUIDataMessage.encode())
         elif msg.name == "ActorAddress":
             msg = parseActorAddressMessage(message)
-            self.logActAddr = msg.logActAddr
+            self.loggingAddr = msg.loggingAddr
             self.envCtrlAddr = msg.envCtrlAddr
         elif msg.name == "EnvironmentData":
             msg = parseEnvironmentDataMessage(message)
@@ -68,6 +68,7 @@ class WebGUI(BaseActor):
             self.send(self.envCtrlAddr, message)
         elif msg.name == "ToggleLightStatus":
             self.webGUIData.envData.lightOn = not self.webGUIData.envData.lightOn
+            self.logInfo("ToggleLightStatus to value: " + str(self.webGUIData.envData.lightOn))
             self.send(self.envCtrlAddr, UpdateLightMessage(self.webGUIData.envData.lightOn).encode())
         else:
             self.send(sender, "Blank")

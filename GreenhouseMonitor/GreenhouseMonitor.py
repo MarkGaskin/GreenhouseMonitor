@@ -13,10 +13,8 @@ from Messages.LightScheduleMessage import LightScheduleMessage
 from Messages.UpdateFanLevelMessage import UpdateFanLevelMessage
 from Messages.UpdateLightMessage import UpdateLightMessage
 import socket
-import templates
 import datetime
-import logging
-import os.path
+
 
 def getTimes(onString, offString, date):
     if onString is not "" and offString is not "":
@@ -120,7 +118,6 @@ if __name__ == "__main__":
     ActorSystem().tell(webGUI, actorAddrMsg.encode())
     ActorSystem().tell(envCtrl, actorAddrMsg.encode())
     ActorSystem().tell(loggingActor, actorAddrMsg.encode())
-
 
     msg = Message("StartEnvironmentTasks")
     ActorSystem().tell(envCtrl, msg.encode())

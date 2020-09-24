@@ -11,7 +11,7 @@ from Messages.LightDataMessage import parseLightDataMessage
 from Messages.LightScheduleMessage import parseLightScheduleMessage, LightScheduleMessage
 from Actors.BaseActor import BaseActor
 import logging
-
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +37,7 @@ class EnvironmentController(BaseActor):
         self.fanCtrlAddr = ""
         self.climRdrAddr = ""
         self.lightCtrlAddr = ""
-        self.logActAddr = ""
+        self.loggingAddr = ""
         self.webGUIAddr = ""
         self.lightSchedule = LightSchedule()
         self.envData = EnvironmentData()
@@ -48,7 +48,7 @@ class EnvironmentController(BaseActor):
         msg = parseMessage(message)
         if msg.name == "ActorAddress":
             msg = parseActorAddressMessage(message)
-            self.logActAddr = msg.logActAddr
+            self.loggingAddr = msg.loggingAddr
             self.webGUIAddr = msg.webGUIAddr
         elif msg.name == "Launch":
             self.fanCtrlAddr = self.createActor(FanController)
@@ -68,13 +68,12 @@ class EnvironmentController(BaseActor):
             self.scheduleMsg(self.myAddress, environmentDataMsg.encode(), 30)
         elif msg.name == "ClimateData":
             msg = parseClimateDataMessage(message)
-            print("Environment Received Climate Temp, Humidity : " + str(msg.climateData.temperature) + ", " + str(msg.climateData.humidity))
-            logger.info("Environment Received Climate Temp, Humidity : " + str(msg.climateData.temperature) + ", " + str(msg.climateData.humidity))
+            self.logInfo("Environment Received Climate Temp, Humidity : " + str(msg.climateData.temperature) + ", " + str(msg.climateData.humidity))
             self.envData.climateData = msg.climateData
         elif msg.name == "FanLevel":
             msg = parseFanLevelMessage(message)
             print("Environment Received Fan Level : " + str(msg.fanLevel))
-            logger.info("Environment Received Fan Level : " + str(msg.fanLevel))
+            self.logInfo("Environment Received Fan Level : " + str(msg.fanLevel))
             self.envData.fanLevel = msg.fanLevel
         elif msg.name == "LightData":
             msg = parseLightDataMessage(message)
@@ -82,16 +81,14 @@ class EnvironmentController(BaseActor):
         elif msg.name == "UpdateEnvironmentData":
             msg = EnvironmentDataMessage(self.envData)
             self.send(self.webGUIAddr, msg.encode())
-            self.send(self.logActAddr, msg.encode())
+            self.send(self.loggingAddr, msg.encode())
         elif msg.name == "LightScheduleComplete":
-            print("LightScheduleComplete")
-            logger.info("LightScheduleComplete")
+            self.logInfo("LightScheduleComplete")
             self.send(self.webGUIAddr, message)
             replyMsg = LightScheduleMessage(self.lightSchedule.upcomingOn, self.lightSchedule.upcomingOff)
             self.send(self.lightCtrlAddr, replyMsg.encode())
         elif msg.name == "LightScheduleStarted":
-            print("LightScheduleStarted")
-            logger.info("LightScheduleStarted")
+            self.logInfo("LightScheduleStarted")
         elif msg.name == "LightSchedule":
             msg = parseLightScheduleMessage(message)
             self.lightSchedule.currentOn = msg.lightOn[0]

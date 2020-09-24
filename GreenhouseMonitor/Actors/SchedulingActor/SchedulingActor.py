@@ -22,7 +22,7 @@ class SchedulingActor(BaseActor):
         msg = parseMessage(message)
         if msg.name == "ActorAddress":
             msg = parseActorAddressMessage(message)
-            self.logActAddr = msg.logActAddr
+            self.logActAddr = msg.loggingAddr
             self.envCtrlAddr = msg.envCtrlAddr
             self.webGUIAddr = msg.webGUIAddr
         elif msg.name == "ScheduleTasks":

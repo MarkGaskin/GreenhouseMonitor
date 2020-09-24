@@ -8,16 +8,34 @@ import os
 import csv
 import datetime
 import logging
+from logging.handlers import TimedRotatingFileHandler
+import sys
 
 
 scriptDir = os.path.dirname(__file__)  # absolute dir the script is in
 relDataLogPath = "../../dataLog.csv"
 absDataLogFilePath = os.path.join(scriptDir, relDataLogPath)
-relSysLogPath = "../../sysLog.csv"
-absSysLogFilePath = os.path.join(scriptDir, relSysLogPath)
-
-sysLogFieldNames = ['dateString', 'timeString', 'Level', 'Log']
 dataLogFieldNames = ['dateString', 'timeString', 'Temperature', 'Humidity', 'LightOn', 'FanLevel']
+
+FORMATTER = logging.Formatter("%(asctime)s — %(levelname)s — %(message)s")
+LOG_FILE = "SystemLog_" + datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H_%M") + ".log"
+try:
+    os.mkdir("Logging")
+except FileExistsError:
+    pass
+filePath = os.path.join("Logging", LOG_FILE)
+
+
+def get_console_handler():
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setFormatter(FORMATTER)
+    return console_handler
+
+
+def get_file_handler():
+    file_handler = TimedRotatingFileHandler(filePath, when='midnight')
+    file_handler.setFormatter(FORMATTER)
+    return file_handler
 
 
 class LoggingActor(BaseActor):
@@ -26,14 +44,14 @@ class LoggingActor(BaseActor):
         self.webGUIAddr = ""
         self.envCtrlAddr = ""
 
-        filename = "SystemLog_" + datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d_%H_%M") + ".log"
-        filepath = os.path.join("Logging", filename)
-        if not os.path.isdir("Logging"):
-            os.makedirs("Logging")
-        logging.basicConfig(filename=filepath, filemode='w',
-                            format='%(name)s - %(asctime)s - %(levelname)s - %(message)s')
+        file_handler = TimedRotatingFileHandler(LOG_FILE, when='midnight')
+        file_handler.setFormatter(FORMATTER)
 
-        print("LoggingActor is alive")
+        self.logger = logging.getLogger("LoggingActor")
+        self.logger.addHandler(get_file_handler())
+        self.logger.addHandler(get_console_handler())
+        self.logger.propagate = False
+        self.logger.info("System launched")
         super().__init__(*args, **kwargs)
 
     def receiveMessage(self, message, sender):
@@ -45,11 +63,13 @@ class LoggingActor(BaseActor):
         elif msg.name == "SysLog":
             msg = parseSysLogMessage(message)
             if msg.level == "Info":
-                logging.info(msg.log)
+                self.logger.info(msg.log)
             elif msg.level == "Error":
-                logging.error(msg.log)
+                self.logger.error(msg.log)
+            elif msg.level == "Debug":
+                self.logger.debug(msg.log)
             else:
-                logging.debug(msg.log)
+                self.logger.warning(msg.log)
         elif msg.name == "EnvironmentData":
             msg = parseEnvironmentDataMessage(message)
             with open(self.absDataLogFilePath, 'a+', newline='') as csvFile:
