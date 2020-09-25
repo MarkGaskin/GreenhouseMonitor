@@ -8,11 +8,9 @@ from Messages.EnvironmentDataMessage import parseEnvironmentDataMessage
 from Messages.LightScheduleMessage import LightScheduleMessage, parseLightScheduleMessage
 from Messages.UpdateLightMessage import UpdateLightMessage
 from Messages.WebGUIDataMessage import WebGUIDataMessage
+from Messages.TriggerClimateDataMessage import parseTriggerClimateDataMessage
 import datetime
 import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 class WebGUIData:
@@ -20,6 +18,8 @@ class WebGUIData:
         self.envData = envData
         self.lightSchedule = lightSchedule
         self.time = datetime.datetime.now()
+        self.triggerTemperature = 100
+        self.triggerHumidity = 100
 
 
 class WebGUI(BaseActor):
@@ -56,20 +56,29 @@ class WebGUI(BaseActor):
             self.webGUIData.lightSchedule.currentOff = msg.lightOff[0]
             self.webGUIData.lightSchedule.upcomingOn = msg.lightOn[1]
             self.webGUIData.lightSchedule.upcomingOff = msg.lightOff[1]
-            print(msg.lightOn[0])
-            print(msg.lightOff[0])
-            print(msg.lightOn[1])
-            print(msg.lightOff[1])
+            self.logInfo("Light schedule updated")
+            self.logInfo("Light on today: " + datetime.datetime.strftime(msg.lightOn[0], "%X"))
+            self.logInfo("Light off today: " + datetime.datetime.strftime(msg.lightOff[0], "%X"))
+            self.logInfo("Light on tomorrow: " + datetime.datetime.strftime(msg.lightOn[1], "%X"))
+            self.logInfo("Light off tomorrow: " + datetime.datetime.strftime(msg.lightOff[1], "%X"))
             self.send(self.envCtrlAddr, message)
             return
         elif msg.name == "UpdateFanLevel":
             msg = parseUpdateFanLevelMessage(message)
             self.webGUIData.envData.fanLevel = msg.fanLevel
+            self.logInfo("Updating Fan Level : " + str(msg.fanLevel))
             self.send(self.envCtrlAddr, message)
+            return
         elif msg.name == "ToggleLightStatus":
             self.webGUIData.envData.lightOn = not self.webGUIData.envData.lightOn
             self.logInfo("ToggleLightStatus to value: " + str(self.webGUIData.envData.lightOn))
             self.send(self.envCtrlAddr, UpdateLightMessage(self.webGUIData.envData.lightOn).encode())
+            return
+        elif msg.name == "TriggerClimateData":
+            msg = parseTriggerClimateDataMessage(message)
+            self.webGUIData.triggerHumidity = msg.triggerHumidity
+            self.webGUIData.triggerTemperature = msg.triggerTemperature
+            self.send(self.envCtrlAddr, message)
         else:
             self.send(sender, "Blank")
 

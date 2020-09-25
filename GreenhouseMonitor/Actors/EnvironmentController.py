@@ -9,11 +9,10 @@ from Messages.ClimateDataMessage import parseClimateDataMessage
 from Messages.FanLevelMessage import parseFanLevelMessage
 from Messages.LightDataMessage import parseLightDataMessage
 from Messages.LightScheduleMessage import parseLightScheduleMessage, LightScheduleMessage
+from Messages.TriggerClimateDataMessage import parseTriggerClimateDataMessage
+from Messages.UpdateFanLevelMessage import UpdateFanLevelMessage, parseUpdateFanLevelMessage
 from Actors.BaseActor import BaseActor
-import logging
 import time
-
-logger = logging.getLogger(__name__)
 
 
 class EnvironmentData:
@@ -40,7 +39,10 @@ class EnvironmentController(BaseActor):
         self.loggingAddr = ""
         self.webGUIAddr = ""
         self.lightSchedule = LightSchedule()
+        self.triggerClimateData = ClimateData(100, 100)
         self.envData = EnvironmentData()
+        self.overheated = False
+        self.fanLevel = 0
         print("EnvironmentController is alive")
         super().__init__(*args, **kwargs)
 
@@ -69,10 +71,21 @@ class EnvironmentController(BaseActor):
         elif msg.name == "ClimateData":
             msg = parseClimateDataMessage(message)
             self.logInfo("Environment Received Climate Temp, Humidity : " + str(msg.climateData.temperature) + ", " + str(msg.climateData.humidity))
+            if (msg.climateData.temperature > self.triggerClimateData.temperature) or\
+               (msg.climateData.humidity > self.triggerClimateData.humidity):
+                self.logWarning("Overheating! Turning fan on")
+                self.overheated = True
+                self.send(self.fanCtrlAddr, UpdateFanLevelMessage(5).encode())
+            elif self.overheated and\
+                 (msg.climateData.temperature < (self.triggerClimateData.temperature - 3)) and\
+                 (msg.climateData.humidity < (self.triggerClimateData.humidity - 5)):
+                self.logInfo("Temperature has returned to suitable levels")
+                self.overheated = False
+                self.send(self.fanCtrlAddr, UpdateFanLevelMessage(self.fanLevel).encode())
+
             self.envData.climateData = msg.climateData
         elif msg.name == "FanLevel":
             msg = parseFanLevelMessage(message)
-            print("Environment Received Fan Level : " + str(msg.fanLevel))
             self.logInfo("Environment Received Fan Level : " + str(msg.fanLevel))
             self.envData.fanLevel = msg.fanLevel
         elif msg.name == "LightData":
@@ -100,6 +113,14 @@ class EnvironmentController(BaseActor):
         elif msg.name == "UpdateLight":
             self.send(self.lightCtrlAddr, message)
         elif msg.name == "UpdateFanLevel":
+            msg = parseUpdateFanLevelMessage(message)
+            self.fanLevel = msg.fanLevel
             self.send(self.fanCtrlAddr, message)
+        elif msg.name == "TriggerClimateData":
+            msg = parseTriggerClimateDataMessage(message)
+            self.logInfo("Trigger climate temperature set to " + str(msg.triggerTemperature))
+            self.logInfo("Trigger climate humidity set to " + str(msg.triggerHumidity))
+            self.triggerClimateData.temperature = msg.triggerTemperature
+            self.triggerClimateData.humidity = msg.triggerHumidity
         else:
             return

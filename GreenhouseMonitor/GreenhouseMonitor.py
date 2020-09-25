@@ -12,6 +12,7 @@ from Messages.WebGUIDataMessage import parseWebGUIDataMessage
 from Messages.LightScheduleMessage import LightScheduleMessage
 from Messages.UpdateFanLevelMessage import UpdateFanLevelMessage
 from Messages.UpdateLightMessage import UpdateLightMessage
+from Messages.TriggerClimateDataMessage import TriggerClimateDataMessage
 import socket
 import datetime
 
@@ -48,6 +49,8 @@ def homepage():
     templateData = {
         'time': webGUIData.webGUIData.time,
         'envData': webGUIData.webGUIData.envData,
+        'triggerTemperature': webGUIData.webGUIData.triggerTemperature,
+        'triggerHumidity': webGUIData.webGUIData.triggerHumidity,
         'lightStatus': "ON" if webGUIData.webGUIData.envData.lightOn else "OFF",
         'currentOn': datetime.datetime.strftime(webGUIData.webGUIData.lightSchedule.currentOn, "%H:%M"),
         'currentOff': datetime.datetime.strftime(webGUIData.webGUIData.lightSchedule.currentOff, "%H:%M"),
@@ -67,7 +70,15 @@ def SubmitSchedule():
                                        request.form['UpcomingEndTime'],
                                        datetime.datetime.now() + datetime.timedelta(days=1))
     webGUI = ActorSystem().createActor(WebGUI, globalName='WebGUISingleton')
-    ActorSystem().ask(webGUI, LightScheduleMessage([currentOn, upcomingOn], [currentOff, upcomingOff]).encode(),10)
+    ActorSystem().ask(webGUI, LightScheduleMessage([currentOn, upcomingOn], [currentOff, upcomingOff]).encode(), 10)
+    return redirect('/')
+
+
+@app.route('/UpdateTriggerValues', methods=['POST'])
+def UpdateTriggerValues():
+    webGUI = ActorSystem().createActor(WebGUI, globalName='WebGUISingleton')
+    ActorSystem().tell(webGUI, TriggerClimateDataMessage(int(request.form['triggerTemperature']),
+                                                         int(request.form['triggerHumidity'])).encode())
     return redirect('/')
 
 

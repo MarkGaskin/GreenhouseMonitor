@@ -1,10 +1,6 @@
 from thespian.actors import Actor
 from Messages.Message import parseMessage
 from Messages.ClimateDataMessage import ClimateDataMessage
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 class ClimateData:

@@ -37,3 +37,11 @@ th, td {
   background: #4CAF50;
   cursor: pointer;
 }
+
+roundedBox {
+  border-radius: 25px;
+  border: 10px solid #000000;
+  padding: 20px;
+  width: 200px;
+  height: 150px;
+}

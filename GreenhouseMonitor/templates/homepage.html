@@ -7,8 +7,33 @@
 </head>
 <body>
     <h1>Last Updated: {{ time }}</h1>
-    <h1>Temperature: {{ envData.climateData.temperature }}</h1>
-    <h1>Humidity: {{ envData.climateData.humidity }}</h1>
+    <form action="/UpdateTriggerValues" method="POST">
+        <table>
+            <tr>
+                <th></th>
+                <th>Current Value</th>
+                <th>Fan Trigger Value</th>
+            </tr>
+            <tr>
+                <td>Temperature: </td>
+                <td>{{ envData.climateData.temperature }}</td>
+                <td><input type="number" name="triggerTemperature" value="{{triggerTemperature}}"/></td>
+            </tr>
+            <tr>
+                <td>Humidity: </td>
+                <td>{{ envData.climateData.humidity }}</td>
+                <td><input type="number" name="triggerHumidity" value="{{triggerHumidity}}"/></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td>
+                    <input type="submit" value="Update"/>
+                </td>
+            </tr>
+        </table>
+    </form>
+
     <form action="/UpdateFanLevel" method="POST">
         <div class="slideContainer">
             <input type="range" min="0" max="5" value="{{envData.fanLevel}}" class="slider" id="fanLevel" name="FanLevel">
@@ -56,5 +81,6 @@
             </tr>
         </table>
     </form>
+
 </body>
 </html>

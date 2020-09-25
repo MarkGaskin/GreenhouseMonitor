@@ -4,10 +4,6 @@ from Messages.LightDataMessage import LightDataMessage
 from Messages.LightScheduleMessage import parseLightScheduleMessage
 from Messages.UpdateLightMessage import parseUpdateLightMessage
 import datetime
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 def isTimeBetween(begin_time, end_time):

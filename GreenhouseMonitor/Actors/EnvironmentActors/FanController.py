@@ -2,10 +2,6 @@ from thespian.actors import Actor
 from Messages.Message import parseMessage
 from Messages.FanLevelMessage import FanLevelMessage
 from Messages.UpdateFanLevelMessage import parseUpdateFanLevelMessage
-import logging
-
-
-logger = logging.getLogger(__name__)
 
 
 totalDuration = 5
@@ -36,7 +32,6 @@ class FanController(Actor):
                 self.count = 0
         elif msg.name == "UpdateFanLevel":
             msg = parseUpdateFanLevelMessage(message)
-            print("Fan Received Update Fan Level : " + str(msg.fanLevel))
             if msg.fanLevel >= 5:
                 self.fanLevel = 5
             elif msg.fanLevel <= 1:
