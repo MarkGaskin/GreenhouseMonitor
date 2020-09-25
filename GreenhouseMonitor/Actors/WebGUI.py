@@ -10,7 +10,6 @@ from Messages.UpdateLightMessage import UpdateLightMessage
 from Messages.WebGUIDataMessage import WebGUIDataMessage
 from Messages.TriggerClimateDataMessage import parseTriggerClimateDataMessage
 import datetime
-import logging
 
 
 class WebGUIData:

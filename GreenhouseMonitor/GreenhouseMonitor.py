@@ -1,7 +1,6 @@
 from thespian.actors import *
 from Actors.LoggingActor import LoggingActor
 from Actors.EnvironmentController import EnvironmentController
-from Actors.SchedulingActor.SchedulingActor import SchedulingActor
 from Actors.WebGUI import WebGUI
 from flask import Flask, render_template, request, redirect
 from Messages.Message import Message

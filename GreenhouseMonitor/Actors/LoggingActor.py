@@ -43,10 +43,6 @@ class LoggingActor(BaseActor):
         self.absDataLogFilePath = absDataLogFilePath
         self.webGUIAddr = ""
         self.envCtrlAddr = ""
-
-        file_handler = TimedRotatingFileHandler(logFile, when='midnight')
-        file_handler.setFormatter(formatter)
-
         self.logger = logging.getLogger("LoggingActor")
         self.logger.addHandler(getFileHandler())
         self.logger.addHandler(getConsoleHandler())

@@ -4,21 +4,6 @@ import _thread
 import time
 from Messages.SysLogMessage import SysLogMessage
 
-
-# class ScheduleMessage(threading.Thread):
-#    def __init__(self, targetAddr, msg, delay, iterations):
-#        threading.Thread.__init__(self)
-#        self.targetAddr = targetAddr
-#        self.msg = msg
-#        self.delay = delay
-#        self.iterations = iterations#
-#
-#   def run(self):
-#       while self.iterations > 0:
-#           self.send(self.targetAddr, self.msg)
-#           time.sleep(self.delay)
-#           self.iterations = self.iterations - 1
-
 class BaseActor(Actor):
     def __init__(self, *args, **kwargs):
         self.loggingAddr = ""
